@@ -1,4 +1,4 @@
-const {app, BrowserWindow} = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
 const url = require('url')
 const express = require("express");
@@ -15,15 +15,15 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false })
 const { remote } = require('electron');
 const settings = require('electron-settings')
 
-if (!fs.existsSync(process.env.APPDATA + '\\LucysPlayer')){
-    fs.mkdirSync(process.env.APPDATA + '\\LucysPlayer');
-	a = {"A":"A"}
+if (!fs.existsSync(process.env.APPDATA + '\\LucysPlayer')) {
+	fs.mkdirSync(process.env.APPDATA + '\\LucysPlayer');
+	a = { "A": "A" }
 	b = JSON.stringify(a)
 	fs.writeFileSync(process.env.APPDATA + '\\LucysPlayer\\Client.json', b)
 	fs.writeFileSync(process.env.APPDATA + '\\LucysPlayer\\Code.json', b)
 	fs.writeFileSync(process.env.APPDATA + '\\LucysPlayer\\Data.json', b)
 	fs.writeFileSync(process.env.APPDATA + '\\LucysPlayer\\Refresh.json', b)
-    console.log('Folder Created Successfully.');
+	console.log('Folder Created Successfully.');
 }
 
 Client = fs.readFileSync(process.env.APPDATA + '\\LucysPlayer\\Client.json')
@@ -35,9 +35,9 @@ function refreshSpotifyToken() {
 	let ClientJ = fs.readFileSync(process.env.APPDATA + '\\LucysPlayer\\Client.json');
 	let Client = JSON.parse(ClientJ);
 	credentials = {
-		clientId : Client.CLIENT_ID,
-		clientSecret : Client.CLIENT_SECRET,
-		redirectUri : 'http://localhost:8888/callback'
+		clientId: Client.CLIENT_ID,
+		clientSecret: Client.CLIENT_SECRET,
+		redirectUri: 'http://localhost:8888/callback'
 	}
 	var spotifyApi = new SpotifyWebApi(credentials);
 	let rawdataA = fs.readFileSync(process.env.APPDATA + '\\LucysPlayer\\Data.json');
@@ -46,10 +46,10 @@ function refreshSpotifyToken() {
 	let rawdataR = fs.readFileSync(process.env.APPDATA + '\\LucysPlayer\\Refresh.json');
 	let dataR = JSON.parse(rawdataR);
 	spotifyApi.setRefreshToken(dataR.refresh);
-	
+
 	//console.log("ACC: " + dataA.auth + "\nREF: " + dataR.refresh)
 	spotifyApi.refreshAccessToken().then(
-		function(data) {
+		function (data) {
 			console.log('The access token has been refreshed!');
 
 			// Save the access token so that it's used in future calls
@@ -78,7 +78,7 @@ function refreshSpotifyToken() {
 			console.log("Will refresh next at" + timeH + ":" + timeM);
 
 		},
-		function(err) {
+		function (err) {
 			console.log('Could not refresh access token');
 			console.log(err)
 		});
@@ -87,7 +87,7 @@ function GetRefreshToken() {
 	var spotifyApi = new SpotifyWebApi(credentials);
 	console.log(credentials)
 	spotifyApi.authorizationCodeGrant(code).then(
-		function(data) {
+		function (data) {
 			console.log('The token expires in:');
 			console.log(data.body['expires_in']);
 			console.log('The access token is:');
@@ -103,7 +103,7 @@ function GetRefreshToken() {
 			}
 
 			let refreshToken = {
-				refresh : data.body['refresh_token']
+				refresh: data.body['refresh_token']
 			}
 
 			let DataA = JSON.stringify(accessToken);
@@ -111,36 +111,41 @@ function GetRefreshToken() {
 			let DataR = JSON.stringify(refreshToken);
 			fs.writeFileSync(process.env.APPDATA + '\\LucysPlayer\\Refresh.json', DataR),
 
-			// Set the access token on the API object to use it in later calls
-				
-			spotifyApi.setAccessToken(data.body['access_token']);
-			spotifyApi.setRefreshToken(data.body['refresh_token']);			
+				// Set the access token on the API object to use it in later calls
+
+				spotifyApi.setAccessToken(data.body['access_token']);
+			spotifyApi.setRefreshToken(data.body['refresh_token']);
 		},
-		function(err) {
+		function (err) {
 			console.log('Something went wrong!', err);
 		}
 	);
 };
 
 credentials = {
-	clientId : Client.CLIENT_ID,
-	clientSecret : Client.CLIENT_SECRET,
-	redirectUri : 'http://localhost:8888/callback'
+	clientId: Client.CLIENT_ID,
+	clientSecret: Client.CLIENT_SECRET,
+	redirectUri: 'http://localhost:8888/callback'
 }
-	
-var spotifyApi = new SpotifyWebApi(credentials);
 
+var spotifyApi = new SpotifyWebApi(credentials);
+var win;
 function ClientWindow() {
-	win = new BrowserWindow({width: 300, height: 550, frame:false, resizable: false, icon:'media/me.ico', webPreferences:{enableRemoteModule: true}}) 
-	
+
+	win = new BrowserWindow({ width: 300, height: 550, frame: false, resizable: false, icon: 'media/me.ico', webPreferences: { enableRemoteModule: true, preload: path.join(__dirname, './preload.js'), } })
+	// win.setAlwaysOnTop(true, 'screen');
+
 	win.loadURL(url.format({
 		pathname: path.join(__dirname, 'index.html'),
 		protocol: 'file:',
 		slashes: true
 	}))
+
+
 }
 
-appE.use("/",router);
+
+appE.use("/", router);
 
 appE.use(bodyParser.urlencoded({ extended: false }));
 appE.use(bodyParser.json());
@@ -178,9 +183,9 @@ router.post('/DataListener', urlencodedParser, function (req, res) {
 	//res.end("no");
 });
 
-	
 
-appE.get('/callback', function(req, res) {
+
+appE.get('/callback', function (req, res) {
 	code = req.query.code
 	fs.writeFileSync(process.env.APPDATA + '\\LucysPlayer\\Code.json', code)
 	ClientJ = fs.readFileSync(process.env.APPDATA + '\\LucysPlayer\\Client.json')
@@ -197,16 +202,24 @@ appE.get('/callback', function(req, res) {
 	};
 	console.log("C")
 
-	
+
 	console.log("D")
 	res.send('<script>window.close()</script>')
 	GetRefreshToken(code)
 });
 
-app.on('ready',() => {
+app.on('ready', () => {
 	appE.listen(8888, () => {
 		refreshSpotifyToken();
+
 		ClientWindow();
 		setInterval(refreshSpotifyToken, 1000 * 60 * 30);
 	})
+
+})
+var flag = true
+ipcMain.on('pin', (event) => {
+	let browserWindow = BrowserWindow.fromWebContents(event.sender)
+	flag ? browserWindow.setAlwaysOnTop(true, "screen") : browserWindow.setAlwaysOnTop(false, "screen");
+	flag = !flag
 })

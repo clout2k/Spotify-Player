@@ -7,8 +7,11 @@
 	<meta name="viewport" content="width=device-width">
     <link rel="stylesheet" type="text/css" href="media/style.css">
     <link rel="icon" href="media/me.ico">
+
   </head>
   <body>
+
+		
 	<div id="title-bar">
 		<div id="title">
 			<span style="vertical-align: middle;">
@@ -16,8 +19,11 @@
 			
 		</div>
 		 <div id="title-bar-btns">
-			  <button onclick="window.close()" id="close-button">x</button>
+			<button id="pin-Btn" onclick="pin(this.id)" ><img id="pin-img" src="./media/pin.png"></button>
+			
+			<button onclick="window.close()" id="close-button"><img src="./media/close.png"></button>
 		 </div>
+		 
 	</div>
     <main>
 	<div id="spotify">
@@ -61,5 +67,6 @@
 	<script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
     <script src="media/app.js"></script>
     <script src="Spotify.js?id=1"></script>
+	<script src="./preload.js"></script>
   </body>
 </html>

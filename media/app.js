@@ -1,6 +1,20 @@
+
+
+// const {ipcRenderer} = require('electron');
 var toggled = localStorage.getItem('ThemeToggled')
 
 body = document.getElementById("html")
+// var flag = true;
+// function clicked(clicked_id){
+//     if(clicked_id == "pin-Btn"){
+     
+
+//         let changeimg = document.getElementById("pin-img")
+//         changeimg.src = flag ? "./media/unpin2.png" : "./media/pin.png";
+//         ipcRenderer.send('pin')
+//         flag = !flag
+//     }
+// }
 
 function Toggle() {
     body.classList.toggle("darkmode")
