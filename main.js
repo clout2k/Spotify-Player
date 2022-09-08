@@ -211,7 +211,7 @@ appE.get('/callback', function (req, res) {
 app.on('ready', () => {
 	appE.listen(8888, () => {
 		refreshSpotifyToken();
-
+		
 		ClientWindow();
 		setInterval(refreshSpotifyToken, 1000 * 60 * 30);
 	})
